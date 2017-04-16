@@ -10,9 +10,22 @@
 #    https://hub.docker.com/r/laradock/workspace/tags/
 #
 
-FROM laradock/workspace:1.3
+FROM phusion/baseimage:latest
 
 MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
+
+RUN DEBIAN_FRONTEND=noninteractive
+RUN locale-gen en_US.UTF-8
+
+ENV LANGUAGE=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+ENV LC_CTYPE=UTF-8
+ENV LANG=en_US.UTF-8
+ENV TERM xterm
+
+# Add the "PHP 7" ppa
+RUN apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:ondrej/php
 
 #
 #--------------------------------------------------------------------------
@@ -24,6 +37,59 @@ MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
 # to add more Software's or remove existing one, you need to edit the
 # base image (https://github.com/LaraDock/workspace).
 #
+
+
+
+# Update software list and install php + nginx
+RUN apt-get update \
+  && apt-get install -y --force-yes \
+  php5.6 \
+  php5.6-cli \
+  php5.6-mysql \
+  php5.6-mcrypt \
+  php5.6-curl \
+  php5.6-gd \
+  php5.6-intl \
+  php-pear \
+  php5.6-imap \
+  php5.6-gmp \
+  php5.6-xdebug \
+  mysql-client \
+  pkg-config \
+  php-dev \
+  libcurl4-openssl-dev \
+  libedit-dev \
+  libssl-dev \
+  libxml2-dev \
+  xz-utils \
+  libsqlite3-dev \
+  sqlite3 \
+  git \
+  curl \
+  vim \
+  nano \
+  postgresql-client \
+  && apt-get clean
+
+
+#RUN sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php5/cli/php.ini
+#RUN sed -i "s/display_errors = .*/display_errors = On/" /etc/php5/cli/php.ini
+#RUN sed -i "s/memory_limit = .*/memory_limit = 512M/" /etc/php5/cli/php.ini
+#RUN sed -i "s/;date.timezone.*/date.timezone = UTC/" /etc/php5/cli/php.ini
+
+#####################################
+# Composer:
+#####################################
+
+# Install composer and add its bin to the PATH.
+RUN curl -s http://getcomposer.org/installer | php && \
+    echo "export PATH=${PATH}:/var/www/laravel/vendor/bin" >> ~/.bashrc && \
+    mv composer.phar /usr/local/bin/composer
+
+# Source the bash
+RUN . ~/.bashrc
+
+#RUN php5enmod mcrypt
 
 #
 #--------------------------------------------------------------------------
@@ -403,3 +469,5 @@ RUN apt-get clean && \
 
 # Set default work directory
 WORKDIR /var/www
+
+EXPOSE 8080

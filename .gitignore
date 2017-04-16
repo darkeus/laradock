@@ -3,3 +3,5 @@
 /data
 .env
 /.project
+*.DS_Store*
+/neo4j/data

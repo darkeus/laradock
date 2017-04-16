@@ -42,6 +42,7 @@ services:
         - "dockerhost:${DOCKER_HOST_IP}"
       ports:
         - "${WORKSPACE_SSH_PORT}:22"
+        - "8080:8080"
       tty: true
       networks:
         - frontend
@@ -56,6 +57,7 @@ services:
           - INSTALL_XDEBUG=${PHP_FPM_INSTALL_XDEBUG}
           - INSTALL_SOAP=${PHP_FPM_INSTALL_SOAP}
           - INSTALL_MONGO=${PHP_FPM_INSTALL_MONGO}
+          - INSTALL_MONGO_OLD=${PHP_FPM_INSTALL_MONGO_OLD}
           - INSTALL_ZIP_ARCHIVE=${PHP_FPM_INSTALL_ZIP_ARCHIVE}
           - INSTALL_BCMATH=${PHP_FPM_INSTALL_BCMATH}
           - INSTALL_PHPREDIS=${PHP_FPM_INSTALL_PHPREDIS}
@@ -244,14 +246,21 @@ services:
 ### Neo4j Container #########################################
 
     neo4j:
-      build: ./neo4j
+      build:
+        context: ./neo4j
+        dockerfile: "Dockerfile-${NEO4J_VERSION}"
+      environment:
+        - NEO4J_ALLOW_STORE_UPGRADE=false
+        - NEO4J_CACHE_MEMORY=2G
+        - NEO4J_HEAP_MEMORY=2048
       ports:
         - "7474:7474"
-        - "1337:1337"
-      environment:
-        - NEO4J_AUTH=default:secret
+        - "7473:7473"
+        - "7687:7687"
+      volumes_from:
+        - applications
       volumes:
-        - neo4j:/var/lib/neo4j/data
+        - ./neo4j/data:/data
       networks:
         - backend
 
@@ -261,6 +270,8 @@ services:
       build: ./mongo
       ports:
         - "27017:27017"
+      volumes_from:
+        - applications
       volumes:
         - mongo:/data/db
       networks:
