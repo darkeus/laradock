@@ -44,11 +44,7 @@ ARG INSTALL_SOAP=false
 RUN if [ ${INSTALL_SOAP} = true ]; then \
     # Install the soap extension
     apt-get -y update && \
-<<<<<<< HEAD
-    apt-get -y install libxml2-dev php-soap nano && \ 
-=======
-    apt-get -y install libxml2-dev php-soap && \
->>>>>>> efc23a693d17db55e56f0cbd856b02da845c6618
+    apt-get -y install libxml2-dev php-soap nano && \
     docker-php-ext-install soap \
 ;fi
 
