@@ -4,17 +4,28 @@
 #--------------------------------------------------------------------------
 #
 # To edit the 'workspace' base Image, visit its repository on Github
-#    https://github.com/Laradock/workspace
+#    https://github.com/LaraDock/workspace
 #
 # To change its version, see the available Tags on the Docker Hub:
 #    https://hub.docker.com/r/laradock/workspace/tags/
 #
-# Note: Base Image name format {image-tag}-{php-version}
-#
 
-FROM laradock/workspace:1.8-56
+FROM phusion/baseimage:latest
 
 MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
+
+RUN DEBIAN_FRONTEND=noninteractive
+RUN locale-gen en_US.UTF-8
+
+ENV LANGUAGE=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+ENV LC_CTYPE=UTF-8
+ENV LANG=en_US.UTF-8
+ENV TERM xterm
+
+# Add the "PHP 7" ppa
+RUN apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:ondrej/php
 
 #
 #--------------------------------------------------------------------------
@@ -24,8 +35,61 @@ MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
 # Mandatory Software's such as ("php5.6-cli", "git", "vim", ....) are
 # installed on the base image 'laradock/workspace' image. If you want
 # to add more Software's or remove existing one, you need to edit the
-# base image (https://github.com/Laradock/workspace).
+# base image (https://github.com/LaraDock/workspace).
 #
+
+
+
+# Update software list and install php + nginx
+RUN apt-get update \
+  && apt-get install -y --force-yes \
+  php5.6 \
+  php5.6-cli \
+  php5.6-mysql \
+  php5.6-mcrypt \
+  php5.6-curl \
+  php5.6-gd \
+  php5.6-intl \
+  php-pear \
+  php5.6-imap \
+  php5.6-gmp \
+  php5.6-xdebug \
+  mysql-client \
+  pkg-config \
+  php-dev \
+  libcurl4-openssl-dev \
+  libedit-dev \
+  libssl-dev \
+  libxml2-dev \
+  xz-utils \
+  libsqlite3-dev \
+  sqlite3 \
+  git \
+  curl \
+  vim \
+  nano \
+  postgresql-client \
+  && apt-get clean
+
+
+#RUN sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php5/cli/php.ini
+#RUN sed -i "s/display_errors = .*/display_errors = On/" /etc/php5/cli/php.ini
+#RUN sed -i "s/memory_limit = .*/memory_limit = 512M/" /etc/php5/cli/php.ini
+#RUN sed -i "s/;date.timezone.*/date.timezone = UTC/" /etc/php5/cli/php.ini
+
+#####################################
+# Composer:
+#####################################
+
+# Install composer and add its bin to the PATH.
+RUN curl -s http://getcomposer.org/installer | php && \
+    echo "export PATH=${PATH}:/var/www/laravel/vendor/bin" >> ~/.bashrc && \
+    mv composer.phar /usr/local/bin/composer
+
+# Source the bash
+RUN . ~/.bashrc
+
+#RUN php5enmod mcrypt
 
 #
 #--------------------------------------------------------------------------
@@ -62,7 +126,8 @@ RUN if [ ${INSTALL_SOAP} = true ]; then \
   # Install the PHP SOAP extension
   apt-get -y update && \
   add-apt-repository -y ppa:ondrej/php && \
-  apt-get -y install libxml2-dev php5.6-soap \
+  apt-get -y install libxml2-dev php5.6-soap && \
+  echo "extension=soap.so" >> /etc/php/5.6/cli/conf.d/40-soap.ini \
 ;fi
 
 #####################################
@@ -137,24 +202,6 @@ RUN if [ ${INSTALL_XDEBUG} = true ]; then \
 COPY ./xdebug.ini /etc/php/5.6/cli/conf.d/xdebug.ini
 
 #####################################
-# Blackfire:
-#####################################
-
-ARG INSTALL_BLACKFIRE=false
-ARG BLACKFIRE_CLIENT_ID
-ARG BLACKFIRE_CLIENT_TOKEN
-
-ENV BLACKFIRE_CLIENT_ID ${BLACKFIRE_CLIENT_ID}
-ENV BLACKFIRE_CLIENT_TOKEN ${BLACKFIRE_CLIENT_TOKEN}
-
-RUN if [ ${INSTALL_XDEBUG} = false -a ${INSTALL_BLACKFIRE} = true ]; then \
-    curl -L https://packagecloud.io/gpg.key | apt-key add - && \
-    echo "deb http://packages.blackfire.io/debian any main" | tee /etc/apt/sources.list.d/blackfire.list && \
-    apt-get update && \
-    apt-get install blackfire-agent \
-;fi
-
-#####################################
 # ssh:
 #####################################
 ARG INSTALL_WORKSPACE_SSH=false
@@ -184,17 +231,6 @@ RUN if [ ${INSTALL_MONGO} = true ]; then \
     # Install the mongodb extension
     pecl install mongodb && \
     echo "extension=mongodb.so" >> /etc/php/5.6/cli/conf.d/30-mongodb.ini \
-;fi
-
-#####################################
-# Mongo_OLD:
-#####################################
-
-ARG INSTALL_MONGO_OLD=false
-RUN if [ ${INSTALL_MONGO_OLD} = true ]; then \
-    # Install the mongo extension
-    pecl install mongo && \
-    echo "extension=mongo.so" >> /etc/php/5.6/cli/conf.d/30-mongo.ini \
 ;fi
 
 #####################################
@@ -311,6 +347,23 @@ RUN if [ ${INSTALL_AEROSPIKE_EXTENSION} = false ]; then \
 ;fi
 
 #####################################
+# PHP V8JS:
+#####################################
+USER root
+
+ARG INSTALL_V8JS_EXTENSION=false
+ENV INSTALL_V8JS_EXTENSION ${INSTALL_V8JS_EXTENSION}
+
+RUN if [ ${INSTALL_V8JS_EXTENSION} = true ]; then \
+    # Install the php V8JS extension
+    add-apt-repository -y ppa:pinepain/libv8-5.4 \
+    && apt-get update \
+    && apt-get install -y php-dev php-pear libv8-5.4 \
+    && pecl install v8js \
+    && echo "extension=v8js.so" >> /etc/php/5.6/cli/php.ini \
+;fi
+
+#####################################
 # Non-root user : PHPUnit path
 #####################################
 
@@ -416,3 +469,5 @@ RUN apt-get clean && \
 
 # Set default work directory
 WORKDIR /var/www
+
+EXPOSE 8080

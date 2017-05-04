@@ -1,0 +1,10 @@
+docker run \
+    --detach \
+    --publish=8484:7474 \
+    --volume=$HOME/neo4j/procopydata:/data \
+    --ulimit=nofile=40000:40000 \
+    --name=neo4j \
+    --env=NEO4J_CACHE_MEMORY=1G \
+    --env=NEO4J_HEAP_MEMORY=1536 \
+    --env=NEO4J_ALLOW_STORE_UPGRADE=true \
+    neo4j:2.3-enterprise

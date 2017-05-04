@@ -18,6 +18,7 @@ services:
           - INSTALL_XDEBUG=${WORKSPACE_INSTALL_XDEBUG}
           - INSTALL_SOAP=${WORKSPACE_INSTALL_SOAP}
           - INSTALL_MONGO=${WORKSPACE_INSTALL_MONGO}
+          - INSTALL_MONGO_OLD=${WORKSPACE_INSTALL_MONGO_OLD}
           - INSTALL_NODE=${WORKSPACE_INSTALL_NODE}
           - INSTALL_YARN=${WORKSPACE_INSTALL_YARN}
           - INSTALL_DRUSH=${WORKSPACE_INSTALL_DRUSH}
@@ -534,10 +535,10 @@ services:
         JAVA_OPTS: "-Djava.awt.headless=true"
       ports:
         - "${JENKINS_HOST_SLAVE_AGENT_PORT}:50000"
-        - "${JENKINS_HOST_HTTP_PORT}:8080"      
+        - "${JENKINS_HOST_HTTP_PORT}:8080"
       privileged: true
       volumes:
-        - ${JENKINS_HOME}:/var/jenkins_home        
+        - ${JENKINS_HOME}:/var/jenkins_home
         - /var/run/docker.sock:/var/run/docker.sock
 
 ### Networks Setup ############################################
