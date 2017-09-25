@@ -225,6 +225,12 @@ RUN if [ ${INSTALL_GHOSTSCRIPT} = true ]; then \
 #--------------------------------------------------------------------------
 #
 
+
+RUN apt-get update && apt-get install -y \
+    locales \
+    && printf 'id_ID.UTF-8 UTF-8\n' >> /etc/locale.gen \
+    && locale-gen
+
 ADD ./laravel.ini /usr/local/etc/php/conf.d
 ADD ./laravel.pool.conf /usr/local/etc/php-fpm.d/
 

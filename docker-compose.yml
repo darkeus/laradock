@@ -252,8 +252,9 @@ services:
         dockerfile: "Dockerfile-${NEO4J_VERSION}"
       environment:
         - NEO4J_ALLOW_STORE_UPGRADE=false
-        - NEO4J_CACHE_MEMORY=2G
-        - NEO4J_HEAP_MEMORY=2048
+        - NEO4J_CACHE_MEMORY=3G
+        - NEO4J_HEAP_MEMORY=3072
+        - NEO4J_KEEP_LOGICAL_LOGS=false
       ports:
         - "7474:7474"
         - "7473:7473"

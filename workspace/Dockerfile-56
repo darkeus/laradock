@@ -65,6 +65,12 @@ RUN if [ ${INSTALL_SOAP} = true ]; then \
   apt-get -y install libxml2-dev php5.6-soap \
 ;fi
 
+RUN add-apt-repository -y ppa:fkrull/deadsnakes
+RUN apt-get -y update
+RUN apt-get install -y python2.7
+RUN ln -s /usr/bin/python2.7 /usr/bin/python2
+
+
 #####################################
 # Set Timezone
 #####################################
